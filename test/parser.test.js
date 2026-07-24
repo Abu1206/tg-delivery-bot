@@ -1,7 +1,7 @@
 import { parseFoodOrder } from '../src/parser.js';
 
 function runTests() {
-  console.log('🧪 Running Order Parser Tests...\n');
+  console.log('Running Order Parser Tests...\n');
 
   const testCases = [
     {
@@ -34,10 +34,10 @@ function runTests() {
       (!tc.expected.location || res.location === tc.expected.location);
 
     if (isSuccess) {
-      console.log(`✅ Test ${index + 1} PASSED: "${tc.input}"`);
+      console.log(`Test ${index + 1} PASSED: "${tc.input}"`);
       passed++;
     } else {
-      console.error(`❌ Test ${index + 1} FAILED: "${tc.input}"`);
+      console.error(`Test ${index + 1} FAILED: "${tc.input}"`);
       console.error('   Expected:', tc.expected);
       console.error('   Got:', res);
     }
@@ -50,3 +50,4 @@ function runTests() {
 }
 
 runTests();
+

@@ -1,11 +1,3 @@
-/**
- * Parses user input for food order requests.
- * Format expected: FOOD <item> to <location>
- * Example: "FOOD Rice to Hostel D"
- *
- * @param {string} text - Raw user message text
- * @returns {{ isValid: boolean, item?: string, location?: string, error?: string }}
- */
 export function parseFoodOrder(text) {
   if (!text || typeof text !== 'string') {
     return {
@@ -15,8 +7,6 @@ export function parseFoodOrder(text) {
   }
 
   const trimmedText = text.trim();
-
-  // Pattern matching: FOOD <item> to <location> (case-insensitive)
   const pattern = /^FOOD\s+(.+?)\s+to\s+(.+?)$/i;
   const match = trimmedText.match(pattern);
 
@@ -43,3 +33,4 @@ export function parseFoodOrder(text) {
     location,
   };
 }
+

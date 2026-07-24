@@ -1,24 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
-/**
- * In-Memory Orders Store
- * Maps orderId -> Order Object
- */
 const ordersMap = new Map();
-
-/**
- * Maps payment reference -> orderId
- */
 const referenceMap = new Map();
 
-/**
- * Creates a new pending order draft.
- * @param {object} param0
- * @param {number} param0.chatId
- * @param {string} param0.item
- * @param {string} param0.location
- * @returns {object}
- */
 export function createOrder({ chatId, item, location }) {
   const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
   const order = {
@@ -29,7 +13,7 @@ export function createOrder({ chatId, item, location }) {
     vendor: null,
     totalAmount: 0,
     paymentReference: null,
-    status: 'PENDING_VENDOR_SELECTION', // PENDING_VENDOR_SELECTION | PENDING_PAYMENT | PAID | FAILED
+    status: 'PENDING_VENDOR_SELECTION',
     createdAt: new Date().toISOString(),
   };
 
@@ -37,12 +21,6 @@ export function createOrder({ chatId, item, location }) {
   return order;
 }
 
-/**
- * Attaches selected vendor and calculates pricing for an order.
- * @param {string} orderId
- * @param {object} vendor
- * @returns {object|null}
- */
 export function setOrderVendor(orderId, vendor) {
   const order = ordersMap.get(orderId);
   if (!order) return null;
@@ -58,31 +36,16 @@ export function setOrderVendor(orderId, vendor) {
   return order;
 }
 
-/**
- * Gets an order by ID.
- * @param {string} orderId
- * @returns {object|null}
- */
 export function getOrder(orderId) {
   return ordersMap.get(orderId) || null;
 }
 
-/**
- * Gets an order by Payment Reference.
- * @param {string} reference
- * @returns {object|null}
- */
 export function getOrderByReference(reference) {
   const orderId = referenceMap.get(reference);
   if (!orderId) return null;
   return getOrder(orderId);
 }
 
-/**
- * Marks order as paid.
- * @param {string} orderId
- * @returns {object|null}
- */
 export function markOrderAsPaid(orderId) {
   const order = ordersMap.get(orderId);
   if (!order) return null;
@@ -92,3 +55,4 @@ export function markOrderAsPaid(orderId) {
   ordersMap.set(orderId, order);
   return order;
 }
+

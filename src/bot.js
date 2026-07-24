@@ -5,26 +5,20 @@ import { MOCK_VENDORS, getVendorById } from './vendors.js';
 import { createOrder, setOrderVendor, getOrder, markOrderAsPaid } from './orders.js';
 import { generatePaystackPaymentLink } from './paystack.js';
 
-/** @type {Telegraf | null} */
 let botInstance = null;
 
-/**
- * Initializes and configures the Telegraf bot.
- * @returns {Telegraf}
- */
 export function initBot() {
   if (!config.BOT_TOKEN || config.BOT_TOKEN === 'YOUR_TELEGRAM_BOT_TOKEN_HERE') {
-    console.warn('⚠️ Telegraf bot initialized in standby mode (BOT_TOKEN missing).');
+    console.warn('Telegraf bot initialized in standby mode (BOT_TOKEN missing).');
     return null;
   }
 
   const bot = new Telegraf(config.BOT_TOKEN);
   botInstance = bot;
 
-  // /start command handler
   bot.command('start', (ctx) => {
     const welcomeMessage = `
-👋 <b>Welcome to Campus Food Delivery Bot!</b>
+<b>Welcome to Campus Food Delivery Bot</b>
 
 You can order food from top campus vendors directly from Telegram.
 
@@ -40,67 +34,61 @@ Send a message in the format:
     return ctx.replyWithHTML(welcomeMessage);
   });
 
-  // /help command handler
   bot.command('help', (ctx) => {
     const helpMessage = `
-ℹ️ <b>Order Instructions</b>
+<b>Order Instructions</b>
 
 Simply type:
 <code>FOOD &lt;Item&gt; to &lt;Location&gt;</code>
 
 <b>Steps:</b>
-1️⃣ Send your order request.
-2️⃣ Choose your preferred vendor.
-3️⃣ Pay securely via Paystack link (or simulate payment).
-4️⃣ Receive instant order confirmation!
+1. Send your order request.
+2. Choose your preferred vendor.
+3. Pay securely via Paystack link (or simulate payment).
+4. Receive instant order confirmation.
     `.trim();
 
     return ctx.replyWithHTML(helpMessage);
   });
 
-  // Handle incoming text messages for food orders
   bot.on('text', (ctx) => {
     const text = ctx.message.text;
 
-    // Ignore commands like /start
     if (text.startsWith('/')) return;
 
     const parsed = parseFoodOrder(text);
 
     if (!parsed.isValid) {
       return ctx.replyWithHTML(
-        `❌ <b>${parsed.error}</b>\n\n<b>Try:</b> <code>FOOD Rice to Hostel D</code>`
+        `<b>${parsed.error}</b>\n\n<b>Try:</b> <code>FOOD Rice to Hostel D</code>`
       );
     }
 
-    // Create draft order
     const order = createOrder({
       chatId: ctx.chat.id,
       item: parsed.item,
       location: parsed.location,
     });
 
-    // Build Inline Keyboard for Vendor Selection
     const buttons = MOCK_VENDORS.map((vendor) => [
       Markup.button.callback(
-        `${vendor.name} • ₦${vendor.basePrice.toLocaleString()} (${vendor.eta})`,
+        `${vendor.name} - NGN ${vendor.basePrice.toLocaleString()} (${vendor.eta})`,
         `vendor:${vendor.id}:${order.orderId}`
       ),
     ]);
 
     const messageText = `
-🛒 <b>Order Received!</b>
+<b>Order Received</b>
 
 <b>Food Item:</b> ${order.item}
 <b>Delivery Location:</b> ${order.location}
 
-<b>Please select a vendor to process your order:</b>
+Please select a vendor to process your order:
     `.trim();
 
     return ctx.replyWithHTML(messageText, Markup.inlineKeyboard(buttons));
   });
 
-  // Handle Vendor Selection Callback
   bot.action(/^vendor:(vendor-\d+):(ORD-\d+)$/, (ctx) => {
     const vendorId = ctx.match[1];
     const orderId = ctx.match[2];
@@ -120,23 +108,23 @@ Simply type:
     const paystackUrl = generatePaystackPaymentLink(order);
 
     const paymentText = `
-💳 <b>Paystack Checkout</b>
+<b>Paystack Checkout</b>
 
 <b>Order ID:</b> <code>${order.orderId}</code>
 <b>Item:</b> ${order.item}
 <b>Vendor:</b> ${vendor.name}
 <b>Location:</b> ${order.location}
 
-<b>Item Price:</b> ₦${vendor.basePrice.toLocaleString()}
-<b>Delivery Fee:</b> ₦${vendor.deliveryFee.toLocaleString()}
-<b>Total Amount:</b> <b>₦${order.totalAmount.toLocaleString()}</b>
+<b>Item Price:</b> NGN ${vendor.basePrice.toLocaleString()}
+<b>Delivery Fee:</b> NGN ${vendor.deliveryFee.toLocaleString()}
+<b>Total Amount:</b> <b>NGN ${order.totalAmount.toLocaleString()}</b>
 
 Click the button below to complete your payment via Paystack:
     `.trim();
 
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.url('💳 Pay via Paystack', paystackUrl)],
-      [Markup.button.callback('⚡ Simulate Successful Payment', `sim_pay:${order.orderId}`)],
+      [Markup.button.url('Pay via Paystack', paystackUrl)],
+      [Markup.button.callback('Simulate Successful Payment', `sim_pay:${order.orderId}`)],
     ]);
 
     return ctx.editMessageText(paymentText, {
@@ -145,7 +133,6 @@ Click the button below to complete your payment via Paystack:
     });
   });
 
-  // Handle Inline Payment Simulation Callback
   bot.action(/^sim_pay:(ORD-\d+)$/, async (ctx) => {
     const orderId = ctx.match[1];
     const order = getOrder(orderId);
@@ -155,11 +142,11 @@ Click the button below to complete your payment via Paystack:
     }
 
     if (order.status === 'PAID') {
-      return ctx.answerCbQuery('Order is already paid!');
+      return ctx.answerCbQuery('Order is already paid.');
     }
 
     markOrderAsPaid(orderId);
-    ctx.answerCbQuery('Payment simulated successfully!');
+    ctx.answerCbQuery('Payment simulated successfully.');
 
     await sendOrderConfirmationMessage(order);
   });
@@ -167,10 +154,6 @@ Click the button below to complete your payment via Paystack:
   return bot;
 }
 
-/**
- * Sends rich order confirmation message to user via Telegram.
- * @param {object} order
- */
 export async function sendOrderConfirmationMessage(order) {
   if (!botInstance) {
     console.warn(`[Bot Warning] Cannot send message for order ${order.orderId}: bot instance not running.`);
@@ -181,19 +164,19 @@ export async function sendOrderConfirmationMessage(order) {
   const eta = order.vendor ? order.vendor.eta : '20-30 mins';
 
   const confirmationText = `
-🎉 <b>Order Confirmed & Paid!</b>
+<b>Order Confirmed & Paid</b>
 
 <b>Order ID:</b> <code>${order.orderId}</code>
-<b>Status:</b> 🟢 <i>Paid & Sent to Kitchen</i>
+<b>Status:</b> <i>Paid & Sent to Kitchen</i>
 
-📋 <b>Order Details:</b>
+<b>Order Details:</b>
 • <b>Item:</b> ${order.item}
 • <b>Vendor:</b> ${vendorName}
 • <b>Location:</b> ${order.location}
-• <b>Total Paid:</b> ₦${order.totalAmount.toLocaleString()}
-• <b>Estimated Delivery:</b> ⏱️ ${eta}
+• <b>Total Paid:</b> NGN ${order.totalAmount.toLocaleString()}
+• <b>Estimated Delivery:</b> ${eta}
 
-Thank you for your order! Your food is on its way. 🚀
+Thank you for your order. Your food is on its way.
   `.trim();
 
   try {
@@ -204,3 +187,4 @@ Thank you for your order! Your food is on its way. 🚀
     console.error(`Failed to send confirmation message to chat ${order.chatId}:`, err.message);
   }
 }
+

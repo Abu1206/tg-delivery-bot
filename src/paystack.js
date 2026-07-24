@@ -1,20 +1,9 @@
 import config from './config.js';
 
-/**
- * Generates a mock Paystack payment link for an order.
- * @param {object} order
- * @returns {string} Payment URL
- */
 export function generatePaystackPaymentLink(order) {
-  // Generates link pointing to our Express server mock payment endpoint
   return `${config.BASE_URL}/checkout/${order.paymentReference}`;
 }
 
-/**
- * Renders an HTML page simulating the Paystack Checkout Interface.
- * @param {object} order
- * @returns {string} HTML Content
- */
 export function renderPaystackCheckoutHTML(order) {
   const isPaid = order.status === 'PAID';
   const amountFormatted = new Intl.NumberFormat('en-NG', {
@@ -122,8 +111,17 @@ export function renderPaystackCheckoutHTML(order) {
       padding: 20px 0;
     }
     .success-icon {
-      font-size: 3rem;
-      margin-bottom: 8px;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: #c6f6d5;
+      color: #2f855a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
     }
     .footer {
       text-align: center;
@@ -145,7 +143,7 @@ export function renderPaystackCheckoutHTML(order) {
         isPaid
           ? `
         <div class="success-box">
-          <div class="success-icon">✅</div>
+          <div class="success-icon">&#10003;</div>
           <h3 style="color: #2f855a; margin: 0 0 8px 0;">Payment Successful!</h3>
           <p style="color: #4a5568; font-size: 0.9rem;">Your order has been confirmed and sent to the Telegram bot.</p>
         </div>
@@ -176,10 +174,11 @@ export function renderPaystackCheckoutHTML(order) {
       }
     </div>
     <div class="footer">
-      🔒 Secured by Paystack (Mock Simulation)
+      Secured by Paystack (Mock Simulation)
     </div>
   </div>
 </body>
 </html>
   `;
 }
+
