@@ -13,7 +13,7 @@ export function parseFoodOrder(text) {
   if (!match) {
     return {
       isValid: false,
-      error: 'Invalid order format. Use format: FOOD <Item> to <Location>\nExample: FOOD Rice to Hostel D',
+      error: 'Invalid order format. Use format: <code>FOOD &lt;Item&gt; to &lt;Location&gt;</code>\nExample: <code>FOOD Rice to Hostel D</code>',
     };
   }
 
@@ -33,4 +33,5 @@ export function parseFoodOrder(text) {
     location,
   };
 }
+
 

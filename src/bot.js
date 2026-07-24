@@ -7,6 +7,15 @@ import { generatePaystackPaymentLink } from './paystack.js';
 
 let botInstance = null;
 
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export function initBot() {
   if (!config.BOT_TOKEN || config.BOT_TOKEN === 'YOUR_TELEGRAM_BOT_TOKEN_HERE') {
     console.warn('Telegraf bot initialized in standby mode (BOT_TOKEN missing).');
@@ -15,6 +24,10 @@ export function initBot() {
 
   const bot = new Telegraf(config.BOT_TOKEN);
   botInstance = bot;
+
+  bot.catch((err, ctx) => {
+    console.error(`Error for update ${ctx.updateType}:`, err.message || err);
+  });
 
   bot.command('start', (ctx) => {
     const welcomeMessage = `
@@ -28,7 +41,7 @@ Send a message in the format:
 
 <b>Example:</b>
 <code>FOOD Rice to Hostel D</code>
-<code>FOOD Jollof & Chicken to Hall 2 Room 10</code>
+<code>FOOD Jollof &amp; Chicken to Hall 2 Room 10</code>
     `.trim();
 
     return ctx.replyWithHTML(welcomeMessage);
@@ -59,9 +72,7 @@ Simply type:
     const parsed = parseFoodOrder(text);
 
     if (!parsed.isValid) {
-      return ctx.replyWithHTML(
-        `<b>${parsed.error}</b>\n\n<b>Try:</b> <code>FOOD Rice to Hostel D</code>`
-      );
+      return ctx.replyWithHTML(parsed.error);
     }
 
     const order = createOrder({
@@ -80,8 +91,8 @@ Simply type:
     const messageText = `
 <b>Order Received</b>
 
-<b>Food Item:</b> ${order.item}
-<b>Delivery Location:</b> ${order.location}
+<b>Food Item:</b> ${escapeHTML(order.item)}
+<b>Delivery Location:</b> ${escapeHTML(order.location)}
 
 Please select a vendor to process your order:
     `.trim();
@@ -111,9 +122,9 @@ Please select a vendor to process your order:
 <b>Paystack Checkout</b>
 
 <b>Order ID:</b> <code>${order.orderId}</code>
-<b>Item:</b> ${order.item}
-<b>Vendor:</b> ${vendor.name}
-<b>Location:</b> ${order.location}
+<b>Item:</b> ${escapeHTML(order.item)}
+<b>Vendor:</b> ${escapeHTML(vendor.name)}
+<b>Location:</b> ${escapeHTML(order.location)}
 
 <b>Item Price:</b> NGN ${vendor.basePrice.toLocaleString()}
 <b>Delivery Fee:</b> NGN ${vendor.deliveryFee.toLocaleString()}
@@ -170,9 +181,9 @@ export async function sendOrderConfirmationMessage(order) {
 <b>Status:</b> <i>Paid & Sent to Kitchen</i>
 
 <b>Order Details:</b>
-• <b>Item:</b> ${order.item}
-• <b>Vendor:</b> ${vendorName}
-• <b>Location:</b> ${order.location}
+• <b>Item:</b> ${escapeHTML(order.item)}
+• <b>Vendor:</b> ${escapeHTML(vendorName)}
+• <b>Location:</b> ${escapeHTML(order.location)}
 • <b>Total Paid:</b> NGN ${order.totalAmount.toLocaleString()}
 • <b>Estimated Delivery:</b> ${eta}
 
@@ -187,4 +198,5 @@ Thank you for your order. Your food is on its way.
     console.error(`Failed to send confirmation message to chat ${order.chatId}:`, err.message);
   }
 }
+
 
