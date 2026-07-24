@@ -1,0 +1,27 @@
+{
+  "name": "tg-delivery-bot",
+  "version": "1.0.0",
+  "description": "Telegram Food Delivery Bot using Node.js, Telegraf, and Express mock Paystack webhook integration",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node test/parser.test.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "telegraf",
+    "paystack",
+    "food-delivery"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "telegraf": "^4.16.3",
+    "uuid": "^9.0.1"
+  }
+}
